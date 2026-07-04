@@ -5,6 +5,8 @@ import pandas as pd
 import dill
 import pickle
 
+from sklearn.metrics import f1_score
+
 from src.exception import customexception
 from src.logger import logging
 
@@ -20,3 +22,29 @@ def save_object(file_path, obj):
 
     except Exception as e:
         raise customexception(e, sys)
+    
+
+def evaluate_models(X_train, y_train,X_test,y_test,models):
+    try:
+        report = {}
+
+        for i in range(len(list(models))):
+            model = list(models.values())[i]
+
+            model.fit(X_train,y_train)
+
+
+            y_train_pred = model.predict(X_train)
+
+            y_test_pred = model.predict(X_test)
+
+            train_model_score = f1_score(y_train, y_train_pred)
+
+            test_model_score = f1_score(y_test, y_test_pred)
+
+            report[list(models.keys())[i]] = test_model_score
+
+        return report
+    
+    except Exception as e:
+        raise customexception(e,sys)
