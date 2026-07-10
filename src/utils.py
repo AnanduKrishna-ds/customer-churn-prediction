@@ -6,6 +6,7 @@ import dill
 import pickle
 
 from sklearn.metrics import f1_score
+from sklearn.model_selection import RandomizedSearchCV
 
 from src.exception import customexception
 from src.logger import logging
@@ -24,12 +25,22 @@ def save_object(file_path, obj):
         raise customexception(e, sys)
     
 
-def evaluate_models(X_train, y_train,X_test,y_test,models):
+def evaluate_models(X_train, y_train,X_test,y_test,models,params):
     try:
         report = {}
 
-        for i in range(len(list(models))):
-            model = list(models.values())[i]
+        for model_name,model in models.items():
+            para=params[model_name]
+            rs = RandomizedSearchCV(
+                    estimator=model,   # model to tune
+                    param_distributions=para,  # params to try
+                    n_iter=10,                   # how many random combinations to try
+                    cv=3,                        # 5 fold cross validation
+                    scoring='f1',                # metric to optimize
+                    random_state=42              # reproducibility
+                )
+            rs.fit(X_train,y_train)
+            model.set_params(**rs.best_params_)
 
             model.fit(X_train,y_train)
 
@@ -42,9 +53,18 @@ def evaluate_models(X_train, y_train,X_test,y_test,models):
 
             test_model_score = f1_score(y_test, y_test_pred)
 
-            report[list(models.keys())[i]] = test_model_score
+            report[model_name] = test_model_score
 
         return report
     
     except Exception as e:
         raise customexception(e,sys)
+    
+
+def load_object(file_path):
+    try:
+        with open(file_path, "rb") as file_obj:
+            return pickle.load(file_obj)
+
+    except Exception as e:
+        raise customexception(e, sys)
