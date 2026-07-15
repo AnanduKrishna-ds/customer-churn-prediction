@@ -5,11 +5,12 @@ import pandas as pd
 import dill
 import pickle
 
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score,precision_score,recall_score,roc_auc_score,accuracy_score
 from sklearn.model_selection import RandomizedSearchCV
 
 from src.exception import customexception
 from src.logger import logging
+from src.mlflow_tracker import start_experiment, log_model_run
 
 
 def save_object(file_path, obj):
@@ -28,6 +29,7 @@ def save_object(file_path, obj):
 def evaluate_models(X_train, y_train,X_test,y_test,models,params):
     try:
         report = {}
+        start_experiment()
 
         for model_name,model in models.items():
             para=params[model_name]
@@ -53,7 +55,15 @@ def evaluate_models(X_train, y_train,X_test,y_test,models,params):
 
             test_model_score = f1_score(y_test, y_test_pred)
 
+            precision = precision_score(y_test, y_test_pred)
+            recall = recall_score(y_test, y_test_pred)
+            accuracy = accuracy_score(y_test, y_test_pred)
+            roc_auc = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+
+
             report[model_name] = test_model_score
+            
+            log_model_run(model_name, model, rs.best_params_, train_model_score, test_model_score,precision, recall, accuracy, roc_auc)
 
         return report
     
