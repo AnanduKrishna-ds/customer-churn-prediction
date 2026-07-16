@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+mlruns/
+mlflow.db
+mlartifacts/
+Notebook/
+logs/
+*.egg-info/
+catboost_info/
+README.md
+.pytest_cache/

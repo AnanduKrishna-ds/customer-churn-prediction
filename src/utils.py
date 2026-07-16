@@ -10,7 +10,7 @@ from sklearn.model_selection import RandomizedSearchCV
 
 from src.exception import customexception
 from src.logger import logging
-from src.mlflow_tracker import start_experiment, log_model_run
+
 
 
 def save_object(file_path, obj):
@@ -27,6 +27,7 @@ def save_object(file_path, obj):
     
 
 def evaluate_models(X_train, y_train,X_test,y_test,models,params):
+    from src.mlflow_tracker import start_experiment, log_model_run
     try:
         report = {}
         start_experiment()
